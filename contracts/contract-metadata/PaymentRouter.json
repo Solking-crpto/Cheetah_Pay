@@ -1,0 +1,519 @@
+{
+  "contractAddress": "0xdb2f8ad94d8b66ad212375f7dd7ad31cca4aea42",
+  "network": "ARC-TESTNET",
+  "deployerWalletId": "3c2464b2-8369-52e2-a782-800bbeca5396",
+  "contract_code_path": "/home/user/app/contracts/PaymentRouter.sol",
+  "contract_compiled_code_path": "/home/user/app/contracts/out/PaymentRouter.sol/PaymentRouter.json",
+  "contract_network_and_links": {
+    "Arc Testnet": "https://explorer.testnet.arc.io/address/0xdb2f8ad94d8b66ad212375f7dd7ad31cca4aea42"
+  },
+  "contract_deployments": [
+    {
+      "chain": "Arc Testnet",
+      "address": "0xdb2f8ad94d8b66ad212375f7dd7ad31cca4aea42",
+      "explorerUrl": "https://explorer.testnet.arc.io/address/0xdb2f8ad94d8b66ad212375f7dd7ad31cca4aea42",
+      "txHash": "0x13a39d32322a52f38b8a1ee68c06039f27cedbd356a0f7d1faff2baac6044202",
+      "deployedAt": "2026-10-26T18:59:45.698Z"
+    }
+  ],
+  "abi": [
+    {
+      "type": "constructor",
+      "inputs": [
+        {
+          "name": "initialOwner",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "USDC",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "USDC_DECIMALS",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint8",
+          "internalType": "uint8"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getPayment",
+      "inputs": [
+        {
+          "name": "paymentId",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "tuple",
+          "internalType": "struct PaymentRouter.Payment",
+          "components": [
+            {
+              "name": "paymentId",
+              "type": "bytes32",
+              "internalType": "bytes32"
+            },
+            {
+              "name": "payer",
+              "type": "address",
+              "internalType": "address"
+            },
+            {
+              "name": "merchant",
+              "type": "address",
+              "internalType": "address"
+            },
+            {
+              "name": "amount",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "totalRefunded",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "status",
+              "type": "uint8",
+              "internalType": "enum PaymentRouter.PaymentStatus"
+            }
+          ]
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "owner",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "pause",
+      "inputs": [],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "paused",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool",
+          "internalType": "bool"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "pay",
+      "inputs": [
+        {
+          "name": "paymentId",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        },
+        {
+          "name": "token",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "merchant",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "amount",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "payments",
+      "inputs": [
+        {
+          "name": "",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "paymentId",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        },
+        {
+          "name": "payer",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "merchant",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "amount",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "totalRefunded",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "status",
+          "type": "uint8",
+          "internalType": "enum PaymentRouter.PaymentStatus"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "refund",
+      "inputs": [
+        {
+          "name": "paymentId",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        },
+        {
+          "name": "amount",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "remainingRefundable",
+      "inputs": [
+        {
+          "name": "paymentId",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "renounceOwnership",
+      "inputs": [],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "transferOwnership",
+      "inputs": [
+        {
+          "name": "newOwner",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "unpause",
+      "inputs": [],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "event",
+      "name": "OwnershipTransferred",
+      "inputs": [
+        {
+          "name": "previousOwner",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "newOwner",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "Paid",
+      "inputs": [
+        {
+          "name": "paymentId",
+          "type": "bytes32",
+          "indexed": true,
+          "internalType": "bytes32"
+        },
+        {
+          "name": "payer",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "merchant",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "token",
+          "type": "address",
+          "indexed": false,
+          "internalType": "address"
+        },
+        {
+          "name": "amount",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "Paused",
+      "inputs": [
+        {
+          "name": "account",
+          "type": "address",
+          "indexed": false,
+          "internalType": "address"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "Refunded",
+      "inputs": [
+        {
+          "name": "paymentId",
+          "type": "bytes32",
+          "indexed": true,
+          "internalType": "bytes32"
+        },
+        {
+          "name": "merchant",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "originalPayer",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "amount",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "Unpaused",
+      "inputs": [
+        {
+          "name": "account",
+          "type": "address",
+          "indexed": false,
+          "internalType": "address"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "error",
+      "name": "DuplicatePaymentId",
+      "inputs": [
+        {
+          "name": "paymentId",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "EnforcedPause",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "ExpectedPause",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "NotMerchant",
+      "inputs": [
+        {
+          "name": "paymentId",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        },
+        {
+          "name": "caller",
+          "type": "address",
+          "internalType": "address"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "OwnableInvalidOwner",
+      "inputs": [
+        {
+          "name": "owner",
+          "type": "address",
+          "internalType": "address"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "OwnableUnauthorizedAccount",
+      "inputs": [
+        {
+          "name": "account",
+          "type": "address",
+          "internalType": "address"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "PaymentNotFound",
+      "inputs": [
+        {
+          "name": "paymentId",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "ReentrancyGuardReentrantCall",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "RefundExceedsRemaining",
+      "inputs": [
+        {
+          "name": "paymentId",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        },
+        {
+          "name": "requested",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "remaining",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "SafeERC20FailedOperation",
+      "inputs": [
+        {
+          "name": "token",
+          "type": "address",
+          "internalType": "address"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "UnsupportedToken",
+      "inputs": [
+        {
+          "name": "token",
+          "type": "address",
+          "internalType": "address"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "ZeroAddress",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "ZeroAmount",
+      "inputs": []
+    }
+  ]
+}

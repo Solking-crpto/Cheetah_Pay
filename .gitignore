@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+dist-mainnet/
+contracts/out/
+contracts/cache/
+
+# Environment — NEVER commit real values
+.env
+.env.local
+.env.*.local
+
+# Foundry
+broadcast/
+
+# Circle entity secret and recovery file — NEVER commit
+.circle/
+recovery_file*.dat
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/settings.json
+*.suo
+*.user
+
+# Logs
+/tmp/
+*.log
+
+.env
+.env.*
+!.env.example
