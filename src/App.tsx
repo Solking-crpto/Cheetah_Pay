@@ -102,7 +102,14 @@ function Router() {
     }
     if (isConnected && chainId !== CHAIN_ID) return <WrongNetwork />
 
-    return <CheckoutView id={id} merchant={merchant} amount={amount} ref={ref} />
+       return (
+     <div className="min-h-dvh px-4 py-6">
+       <div className="mx-auto w-full max-w-md space-y-4">
+         <CheckoutPage params={{ id, merchant, amount, ref }} />
+         <StatusPanel paymentId={id} />
+       </div>
+     </div>
+   )
   }
 
   // ── Merchant (anonymous) ─────────────────────────────────────────────────────
