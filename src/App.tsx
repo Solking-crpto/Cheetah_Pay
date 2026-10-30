@@ -5,7 +5,7 @@
  *   #             Merchant view (create payment request — no wallet required)
  *   #checkout?…   Customer checkout (wallet needed only to sign the tx)
  */
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { useAccount } from 'wagmi'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { MerchantView } from './components/MerchantView'

@@ -11,7 +11,6 @@ import {
   type Blockchain as ScpBlockchain,
   type CircleSmartContractPlatformClient,
 } from '@circle-fin/smart-contract-platform';
-import { getChain } from '@circlefin/compass-chains';
 import { type Abi, type Hex, createPublicClient, createWalletClient, encodeFunctionData, http, keccak256 } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 
@@ -63,13 +62,6 @@ const ACTIVE_CHAIN: ChainConfig = {
   gasToken: 'native',
 };
 
-function resolveChainDef(compassChain: string): ReturnType<typeof getChain> {
-  try {
-    return getChain(compassChain);
-  } catch {
-    throw new Error(`Unknown --compass-chain "${compassChain}". Expected a Compass chain id (e.g. Arc_Testnet, Base_Sepolia).`);
-  }
-}
 
 function explorerUrlFor(address: string): string {
   return ACTIVE_CHAIN.explorer ? `${ACTIVE_CHAIN.explorer}/address/${address}` : address;
@@ -181,29 +173,28 @@ function usage(): string {
     '  --factory <addr>         reuse an existing Create2Factory (dcw); omit to deploy one',
     '  --skip-funding           skip faucet funding (reused funded wallet)',
     '  --blockchain <enum>      REQUIRED — Circle SDK blockchain enum (e.g. ARC-TESTNET, BASE-SEPOLIA)',
-    '  --compass-chain <id>     REQUIRED — Compass chain id (e.g. Arc_Testnet); resolves explorer/gas-token via the chain registry',
+    '  --compass-chain <id>     REQUIRED — Compass chain id (e.g. Arc_Testnet)',
     '  --rpc <url>              fork + reads RPC for the target chain. Omit it and the script builds the',
     '                           keyed RPC-proxy URL from RPC_PROXY_BASE_URL / RPC_PROXY_TOKEN /',
     '                           RPC_PROXY_CHAINS in .env (required when the proxy does not cover the chain,',
     '                           and required for a --signer private-key live deploy: that path broadcasts',
     '                           through this RPC and the proxy denies eth_sendRawTransaction).',
-    '  --gas-token <usdc|native>  override the registry default (usdc for USDC-gas chains, native otherwise)',
-    '  --explorer <baseUrl>     override the registry explorer base URL for metadata links',
-    '  --chain-label <label>    override the registry chain name used in metadata',
+    '  --gas-token <usdc|native> REQUIRED — gas token for the target chain',
+    '  --explorer <baseUrl>     optional explorer base URL for metadata links',
+    '  --chain-label <label>    chain name for metadata (defaults to --compass-chain)',
     '',
     'Examples (--blockchain/--compass-chain are required; Arc Testnet shown; --rpc omitted so the',
     'keyed RPC proxy in .env is used):',
-    '  bun run compass:deploy SimpleToken --mode live --blockchain ARC-TESTNET --compass-chain Arc_Testnet',
-    "  bun run compass:deploy SimpleToken '[\"My Token\",\"MTK\",1000000]' --mode live --blockchain ARC-TESTNET --compass-chain Arc_Testnet",
-    '  bun run compass:deploy SimpleToken --mode fork --blockchain BASE-SEPOLIA --compass-chain Base_Sepolia --rpc https://sepolia.base.org',
-    '  DEPLOYER_PRIVATE_KEY set in .env; bun run compass:deploy SimpleToken --signer private-key --mode live --blockchain ARC-TESTNET --compass-chain Arc_Testnet --rpc https://rpc.testnet.arc.io',
-    '  bun run compass:deploy SimpleToken --mode verify --blockchain ARC-TESTNET --compass-chain Arc_Testnet > /tmp/verify.log 2>&1 &',
+    '  bun run compass:deploy SimpleToken --mode live --blockchain ARC-TESTNET --compass-chain Arc_Testnet --gas-token usdc --explorer https://explorer.testnet.arc.io --chain-label "Arc Testnet"',
+    "  bun run compass:deploy SimpleToken '[\"My Token\",\"MTK\",1000000]' --mode live --blockchain ARC-TESTNET --compass-chain Arc_Testnet --gas-token usdc --explorer https://explorer.testnet.arc.io --chain-label \"Arc Testnet\"",
+    '  bun run compass:deploy SimpleToken --mode fork --blockchain BASE-SEPOLIA --compass-chain Base_Sepolia --gas-token native --rpc https://sepolia.base.org',
+    '  DEPLOYER_PRIVATE_KEY set in .env; bun run compass:deploy SimpleToken --signer private-key --mode live --blockchain ARC-TESTNET --compass-chain Arc_Testnet --gas-token usdc --explorer https://explorer.testnet.arc.io --chain-label "Arc Testnet" --rpc https://rpc.testnet.arc.io',
+    '  bun run compass:deploy SimpleToken --mode verify --blockchain ARC-TESTNET --compass-chain Arc_Testnet --gas-token usdc --explorer https://explorer.testnet.arc.io --chain-label "Arc Testnet" > /tmp/verify.log 2>&1 &',
     '  Owner-arg contract, one shot (verify writes the receipt, live consumes it):',
-    '  bun run compass:deploy MyToken \'["$DEPLOYER"]\' --mode verify --blockchain ARC-TESTNET --compass-chain Arc_Testnet',
-    '  bun run compass:deploy MyToken \'["$DEPLOYER"]\' --mode live   --blockchain ARC-TESTNET --compass-chain Arc_Testnet',
+    "  bun run compass:deploy MyToken '[\"$DEPLOYER\"]' --mode verify --blockchain ARC-TESTNET --compass-chain Arc_Testnet --gas-token usdc --explorer https://explorer.testnet.arc.io --chain-label \"Arc Testnet\"",
+    "  bun run compass:deploy MyToken '[\"$DEPLOYER\"]' --mode live --blockchain ARC-TESTNET --compass-chain Arc_Testnet --gas-token usdc --explorer https://explorer.testnet.arc.io --chain-label \"Arc Testnet\"",
     '  Mainnet (dcw only; user pre-funds the wallet — the testnet faucet cannot run there):',
-    '  bun run compass:deploy SimpleToken --mode live --blockchain <MainnetEnum> --compass-chain <MainnetChainId> --wallet-id <id> --wallet-address <addr> --skip-funding',
-    '',
+    '  bun run compass:deploy SimpleToken --mode live --blockchain <MainnetEnum> --compass-chain <MainnetChainId> --gas-token <usdc|native> --wallet-id <id> --wallet-address <addr> --skip-funding',
     'Environment variables:',
     '  CIRCLE_DEVELOPER_CONTROLLED_API_KEY or CIRCLE_API_KEY or CIRCLE_SCP_API_KEY  (dcw signer only)',
     '  CIRCLE_ENTITY_SECRET or ENTITY_SECRET or CIRCLE_SCP_ENTITY_SECRET            (dcw signer only)',
@@ -347,6 +338,10 @@ export function parseArgs(argv: string[]): CliOptions {
     throw new Error('--compass-chain is required (the Compass chain id, e.g. Arc_Testnet).');
   }
 
+  if (!gasTokenOverride) {
+    throw new Error('--gas-token is required (usdc or native); specify it explicitly for the target chain.');
+  }
+
   if (signerKind === 'private-key' && (mode === 'live' || mode === 'fork-then-live') && !rpcUrl) {
     throw new Error(
       '--rpc is required for a --signer private-key live deploy: that path broadcasts the raw transaction ' +
@@ -358,12 +353,11 @@ export function parseArgs(argv: string[]): CliOptions {
 
   const resolvedRpcUrl = resolveRpcUrl(rpcUrl, compassChain);
 
-  const chainDef = resolveChainDef(compassChain);
   ACTIVE_CHAIN.circleBlockchain = blockchain;
   ACTIVE_CHAIN.compassChain = compassChain;
-  ACTIVE_CHAIN.explorer = explorerOverride ?? chainDef.explorerUrl ?? '';
-  ACTIVE_CHAIN.chainLabel = chainLabelOverride ?? chainDef.name;
-  ACTIVE_CHAIN.gasToken = gasTokenOverride ?? (chainDef.nativeCurrency.symbol === 'USDC' ? 'usdc' : 'native');
+  ACTIVE_CHAIN.explorer = explorerOverride ?? '';
+  ACTIVE_CHAIN.chainLabel = chainLabelOverride ?? compassChain;
+  ACTIVE_CHAIN.gasToken = gasTokenOverride;
 
   return {
     name,

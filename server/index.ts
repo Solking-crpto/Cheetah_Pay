@@ -1,32 +1,26 @@
 /**
- * CheetahPay fiat-to-USDC settlement backend — SANDBOX ONLY.
+ * CheetahPay fiat-to-USDC backend -- SANDBOX ONLY.
  *
- * Security model
- * ──────────────
- * • TREASURY_PRIVATE_KEY and FIAT_WEBHOOK_SECRET are read only here.
- *   Neither has a VITE_ prefix — Vite never bundles them.
- * • All sandbox webhook signing and verification happen here.
- *   The browser never holds or computes the HMAC secret.
- * • /api/fiat/initiate looks up amount and merchant from the server-side
- *   payment-request store. It rejects any client-supplied amount or merchant
- *   that does not match the registered request.
- * • Maximum amount: MAX_USDC_AMOUNT USDC per payment request.
- * • Rate limiting: MAX_REQUESTS_PER_WINDOW per IP per RATE_WINDOW_MS.
- * • settle() asserts chainId === ARC_TESTNET_CHAIN_ID before submitting any tx.
- * • SETTLED is written only after:
- *     1. The treasury pay() tx is included in a block.
- *     2. The receipt contains a Paid event for the correct paymentId.
- * • Per-payment-ID lock (settlingIds) prevents double treasury transfers.
+ * SECURITY STATUS
+ * ----------------
+ * - POST /api/payment-request is TEMPORARILY DISABLED (HTTP 503).
+ * - POST /api/fiat/initiate is TEMPORARILY DISABLED (HTTP 503).
+ * - No card or bank payment is processed by these disabled endpoints.
+ * - No treasury settlement can be initiated through the disabled routes.
+ * - Legacy sandbox settlement code remains in this file but is unreachable
+ *   through the disabled POST handlers. Do not re-enable without a security
+ *   review and genuine payment-provider verification.
+ * - This backend is not a production fiat payment integration.
  *
- * Endpoints
- * ─────────
- *   POST /api/payment-request          Register a merchant payment request
- *   GET  /api/payment-request/:id      Read a registered request (checkout page)
- *   POST /api/fiat/initiate            Start fiat flow for a registered request
- *   GET  /api/fiat/status/:id          Poll fiat payment state
+ * ENDPOINTS
+ * ---------
+ *   POST /api/payment-request          DISABLED -- returns HTTP 503
+ *   GET  /api/payment-request/:id      Read an existing registered request
+ *   POST /api/fiat/initiate            DISABLED -- returns HTTP 503
+ *   GET  /api/fiat/status/:id          Poll an existing fiat payment record
  *
- * State machine (server-side fiat records):
- *   INITIATED → WEBHOOK_RECEIVED → CONVERSION_PENDING → SETTLED | FAILED
+ * State machine retained in legacy server-side code:
+ *   INITIATED -> WEBHOOK_RECEIVED -> CONVERSION_PENDING -> SETTLED | FAILED
  */
 
 import {
@@ -350,10 +344,11 @@ Bun.serve({
     const ip = clientIp(req)
 
     // ── POST /api/payment-request ─────────────────────────────────────────────
-    // Called by the merchant view when it generates a checkout link.
-    // Registers the authoritative {onchainPaymentId, amount, merchant} tuple.
-    // The fiat flow will only accept requests for IDs registered here.
+    // DISABLED: payment-request registration returns HTTP 503.
+    // Legacy registration logic below is unreachable and must not be re-enabled
+    // until the fiat payment flow has passed a security review.
     if (req.method === 'POST' && pathname === '/api/payment-request') {
+      return err('Sandbox payment-request registration is temporarily disabled.', 503)
       if (isRateLimited(ip)) return err('Rate limit exceeded. Try again shortly.', 429)
 
       let body: Record<string, string>
@@ -404,15 +399,11 @@ Bun.serve({
     }
 
     // ── POST /api/fiat/initiate ───────────────────────────────────────────────
-    // Starts a fiat payment for an already-registered payment request.
-    //
-    // Security:
-    //   - onchainPaymentId must reference a registered payment request.
-    //   - amount and merchant are taken from that server-side record;
-    //     any client-supplied values are IGNORED after the lookup.
-    //   - Rate-limited per IP.
-    //   - Amount re-validated against MAX_USDC_AMOUNT (defence in depth).
+    // DISABLED: fiat settlement returns HTTP 503.
+    // Legacy settlement logic below is unreachable. Do not re-enable it
+    // without genuine payment-provider verification and a security review.
     if (req.method === 'POST' && pathname === '/api/fiat/initiate') {
+      return err('Sandbox fiat settlement is temporarily disabled for security. No card or bank payment will be processed.', 503)
       if (isRateLimited(ip)) return err('Rate limit exceeded. Try again shortly.', 429)
 
       let body: Record<string, string>
