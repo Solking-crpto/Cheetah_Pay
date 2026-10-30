@@ -35,3 +35,6 @@ Thumbs.db
 !.env.example
 
 *.jsonl
+
+# npm lockfile; this project uses bun.lock
+package-lock.json
