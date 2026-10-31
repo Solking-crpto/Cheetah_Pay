@@ -104,6 +104,10 @@ export const PAYMENT_ROUTER_ADDRESS = (
   IS_MAINNET ? MAINNET_ROUTER_ADDRESS : TESTNET_ROUTER_ADDRESS
 ) as `0x${string}`
 
+export const IS_ROUTER_CONFIGURED =
+  /^0x[0-9a-fA-F]{40}$/.test(PAYMENT_ROUTER_ADDRESS) &&
+  PAYMENT_ROUTER_ADDRESS.toLowerCase() !== '0x0000000000000000000000000000000000000000'
+
 // ── Explorer helpers ──────────────────────────────────────────────────────────
 
 export function explorerTxUrl(hash: string): string {

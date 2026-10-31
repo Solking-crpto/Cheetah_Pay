@@ -9,8 +9,6 @@ import {
 } from '@/lib/contract'
 import { parseUsdc, formatUsdc as _formatUsdc, shortAddr, parseOnchainError } from '@/lib/utils'
 import { WrongNetwork } from './WrongNetwork'
-import { FiatCheckout } from './FiatCheckout'
-import { useServerRegistration } from '@/hooks/useServerRegistration'
 
 // re-export so StatusPanel can import from here without a circular dep
 export { _formatUsdc as formatUsdc }
@@ -34,7 +32,6 @@ export function CheckoutPage({ params }: Props) {
 
   // Check whether the server has this payment ID registered.
   // Used to decide whether the card option is available.
-  const serverReg = useServerRegistration(params.id)
 
   // ── Read: current allowance ────────────────────────────────────────────────
   const { data: allowance, refetch: refetchAllowance } = useReadContract({
@@ -412,24 +409,8 @@ export function CheckoutPage({ params }: Props) {
       )}
 
       {/* ── Divider ──────────────────────────────────────────────────────── */}
-      {!alreadyPaid && !isPaused && (
-        <div className="flex items-center gap-3">
-          <div className="flex-1" style={{ height: 1, background: 'var(--border)' }} />
-          <span className="text-xs font-500" style={{ color: 'var(--subtle)' }}>or</span>
-          <div className="flex-1" style={{ height: 1, background: 'var(--border)' }} />
-        </div>
-      )}
 
       {/* ── Fiat option ────────────────────────────────────────────────── */}
-      {!alreadyPaid && !isPaused && (
-        <FiatCheckout
-          onchainPaymentId={params.id}
-          amount={params.amount}
-          merchant={params.merchant}
-          reference={params.ref}
-          serverReg={serverReg}
-        />
-      )}
     </>
   )
 }

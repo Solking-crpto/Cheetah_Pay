@@ -12,7 +12,8 @@ import { MerchantView } from './components/MerchantView'
 import { CheckoutPage } from './components/CheckoutPage'
 import { StatusPanel } from './components/StatusPanel'
 import { WrongNetwork } from './components/WrongNetwork'
-import { CHAIN_ID } from './lib/contract'
+import { CHAIN_ID, IS_ROUTER_CONFIGURED } from './lib/contract'
+import { isValidAddress, parseUsdc } from './lib/utils'
 
 // ── URL helpers ────────────────────────────────────────────────────────────────
 
@@ -97,8 +98,28 @@ function Router() {
     const amount   = p.get('amount')
     const ref      = p.get('ref') ?? ''
 
+    const validId = !!id && /^0x[0-9a-fA-F]{64}$/.test(id)
+    const validMerchant = !!merchant && isValidAddress(merchant)
+    let validAmount = false
+
+    if (amount && /^\d+(?:\.\d{1,6})?$/.test(amount)) {
+      try {
+        validAmount = parseUsdc(amount) > 0n
+      } catch {
+        validAmount = false
+      }
+    }
+
+    if (!validId || !validMerchant || !validAmount) {
+      return <InvalidLink message="This checkout link is invalid or contains invalid payment details." />
+    }
+
     if (!id || !merchant || !amount) {
-      return <InvalidLink message="This checkout link is invalid or incomplete." />
+      return <InvalidLink message="This checkout link is missing required payment details." />
+    }
+
+    if (!IS_ROUTER_CONFIGURED) {
+      return <InvalidLink message="Checkout is unavailable because the payment router is not configured for this network." />
     }
     if (isConnected && chainId !== CHAIN_ID) return <WrongNetwork />
 

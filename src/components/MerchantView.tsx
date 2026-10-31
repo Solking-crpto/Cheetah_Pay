@@ -16,16 +16,12 @@ import { useState } from 'react'
 import { useAccount } from 'wagmi'
 import { ConnectKitButton } from 'connectkit'
 import {
-  Copy, Check, Zap, ExternalLink, ArrowRight, Loader, AlertTriangle,
-  Wallet, WifiOff, CheckCircle, XCircle,
+  Copy, Check, Zap, ExternalLink, ArrowRight, AlertTriangle, Wallet,
 } from 'lucide-react'
-import { CHAIN_NAME, USDC_ADDRESS, PAYMENT_ROUTER_ADDRESS, IS_MAINNET_BUILD, explorerAddrUrl } from '@/lib/contract'
+import { CHAIN_NAME, USDC_ADDRESS, PAYMENT_ROUTER_ADDRESS, IS_MAINNET_BUILD, IS_ROUTER_CONFIGURED, explorerAddrUrl } from '@/lib/contract'
 import { generatePaymentId, parseUsdc, isValidAddress, checksumAddress } from '@/lib/utils'
 
 const MAX_USDC = 5
-
-/** Result of the background server registration attempt. */
-type RegStatus = 'pending' | 'ok' | 'server-error' | 'network-error'
 
 interface Props {
   onLink: (paymentId: `0x${string}`, link: string) => void
@@ -50,8 +46,6 @@ export function MerchantView({ onLink }: Props) {
   const [generatedId, setGeneratedId]     = useState<`0x${string}` | null>(null)
 
   // Background registration state — never blocks link generation.
-  const [regStatus, setRegStatus]   = useState<RegStatus>('pending')
-  const [regError, setRegError]     = useState<string | null>(null)
 
   // ------------------------------------------------------------------
   // Address helpers
@@ -123,48 +117,20 @@ export function MerchantView({ onLink }: Props) {
   function handleGenerate() {
     if (!validateAll()) return
 
+    if (!IS_ROUTER_CONFIGURED) {
+      setAmountErr('The payment router is not configured for this network.')
+      return
+    }
+
     const merchant = addr1.trim().toLowerCase()
     const id = generatePaymentId(merchant, reference || 'payment')
-
-    // ── 1. Build and show the link immediately ─────────────────────────────
     const params = new URLSearchParams({ id, merchant, amount, ref: reference || '' })
     const link = `${window.location.origin}${window.location.pathname}#checkout?${params.toString()}`
+
     setGeneratedLink(link)
     setGeneratedId(id)
-    setRegStatus('pending')
-    setRegError(null)
     onLink(id, link)
-
-    // ── 2. Register with the server in the background ──────────────────────
-    // Success → card option enabled on the checkout page.
-    // Failure → link still works; wallet payments unaffected.
-    void (async () => {
-      try {
-        const resp = await fetch('/api/payment-request', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            onchainPaymentId: id,
-            amount,
-            merchant,
-            reference: reference || '',
-          }),
-        })
-        if (resp.ok) {
-          setRegStatus('ok')
-        } else {
-          const body = await resp.json().catch(() => ({ error: 'Server error' })) as { error?: string }
-          setRegStatus('server-error')
-          setRegError(body.error ?? 'Server returned an error.')
-        }
-      } catch {
-        // fetch() throws only on a genuine network failure (backend not running).
-        setRegStatus('network-error')
-        setRegError('Backend not reachable — start it with: bun run server')
-      }
-    })()
   }
-
   // ------------------------------------------------------------------
   // Copy + in-app open
   // ------------------------------------------------------------------
@@ -499,58 +465,9 @@ export function MerchantView({ onLink }: Props) {
             </a>
           </div>
 
-          {/* Background registration status */}
-          <div className="mt-3">
-            {regStatus === 'pending' && (
-              <div className="flex items-center gap-2">
-                <Loader size={12} className="animate-spin" style={{ color: 'var(--muted)' }} />
-                <span className="text-xs" style={{ color: 'var(--subtle)' }}>
-                  Registering with payment server…
-                </span>
-              </div>
-            )}
-            {regStatus === 'ok' && (
-              <div className="flex items-center gap-2">
-                <CheckCircle size={12} style={{ color: 'var(--success)' }} />
-                <span className="text-xs" style={{ color: 'var(--success)' }}>
-                  Registered. Wallet and card payments both available on this link.
-                </span>
-              </div>
-            )}
-            {(regStatus === 'server-error' || regStatus === 'network-error') && (
-              <div
-                className="flex items-start gap-2 rounded-xl px-3 py-2.5"
-                style={{
-                  background: regStatus === 'network-error'
-                    ? 'rgba(100,60,0,0.06)' : 'rgba(186,43,76,0.06)',
-                  border: `1px solid ${regStatus === 'network-error'
-                    ? 'rgba(140,100,0,0.2)' : 'rgba(186,43,76,0.2)'}`,
-                }}
-              >
-                {regStatus === 'network-error'
-                  ? <WifiOff size={12} style={{ color: '#7a5200', flexShrink: 0, marginTop: 1 }} />
-                  : <XCircle  size={12} style={{ color: 'var(--danger)', flexShrink: 0, marginTop: 1 }} />
-                }
-                <div>
-                  <p
-                    className="text-xs font-600"
-                    style={{ color: regStatus === 'network-error' ? '#7a5200' : 'var(--danger)' }}
-                  >
-                    Wallet payments work.{' '}
-                    Card option unavailable for this link — backend not reachable.
-                  </p>
-                  {regError && (
-                    <p
-                      className="mt-0.5 text-xs"
-                      style={{ color: regStatus === 'network-error' ? '#7a5200' : 'var(--danger)' }}
-                    >
-                      {regError}
-                    </p>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
+          <p className="mt-3 text-xs" style={{ color: 'var(--subtle)' }}>
+            Wallet payments are available on this link. Card and bank payments are not currently supported.
+          </p>
 
           {/* Summary */}
           <div

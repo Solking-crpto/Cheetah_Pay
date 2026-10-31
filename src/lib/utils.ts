@@ -34,9 +34,19 @@ export async function checksumAddress(addr: string): Promise<string> {
 
 /** Parse a decimal USDC string (e.g. "10.50") to raw bigint units. */
 export function parseUsdc(value: string): bigint {
-  const [int, frac = ''] = value.split('.')
-  const fracPadded = frac.padEnd(USDC_DECIMALS, '0').slice(0, USDC_DECIMALS)
-  return BigInt(int || '0') * 10n ** BigInt(USDC_DECIMALS) + BigInt(fracPadded)
+  if (!/^\d+(?:\.\d{1,6})?$/.test(value)) {
+    throw new Error('Invalid USDC amount')
+  }
+
+  const [whole, fraction = ''] = value.split('.')
+  const raw = BigInt(whole) * 10n ** BigInt(USDC_DECIMALS)
+    + BigInt(fraction.padEnd(USDC_DECIMALS, '0'))
+
+  if (raw <= 0n) {
+    throw new Error('USDC amount must be greater than zero')
+  }
+
+  return raw
 }
 
 /** Format raw bigint units to a human-readable USDC string, e.g. "10.50". */
@@ -64,18 +74,9 @@ export function parseOnchainError(err: unknown): string {
   return 'Something went wrong. Please try again.'
 }
 
-/** Generate a unique payment ID as a 32-byte hex string seeded from caller + timestamp. */
-export function generatePaymentId(merchantAddr: string, reference: string): `0x${string}` {
-  // Simple but collision-resistant for testnet: keccak256-equivalent via SubtleCrypto
-  // We produce a deterministic-looking id from merchant + reference + timestamp + random bytes
-  const seed = `${merchantAddr}:${reference}:${Date.now()}:${Math.random()}`
-  // Encode as UTF-8 bytes, pad/truncate to 32 bytes, then hex-encode
-  const encoder = new TextEncoder()
-  const bytes = encoder.encode(seed)
-  // XOR-fold into 32 bytes
-  const out = new Uint8Array(32)
-  for (let i = 0; i < bytes.length; i++) out[i % 32] ^= bytes[i]
-  // Add a random component in the top 8 bytes to prevent any accidental collision
-  crypto.getRandomValues(out.subarray(0, 8))
-  return ('0x' + Array.from(out).map(b => b.toString(16).padStart(2, '0')).join('')) as `0x${string}`
+/** Generate a cryptographically random 32-byte payment ID. */
+export function generatePaymentId(_merchantAddr: string, _reference: string): `0x${string}` {
+  const bytes = crypto.getRandomValues(new Uint8Array(32))
+  const hex = Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('')
+  return `0x${hex}` as `0x${string}`
 }
